@@ -34,7 +34,7 @@ offlineFallback();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("./service-worker.js").then(
+    navigator.serviceWorker.register("./src-sw.js").then(
       function (registration) {
         // Registration was successful
         console.log(
