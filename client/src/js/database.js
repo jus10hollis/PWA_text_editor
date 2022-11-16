@@ -20,7 +20,7 @@ export const putDb = async (content) => {
   const request = store.add({ content: content });
   const result = await request;
   console.log("🚀 - data saved to the database", result);
-  console.error("putDb not implemented");
+  // console.error("putDb not implemented");
 };
 
 // TODO: Add logic for a method that gets all the content from the database
@@ -31,7 +31,7 @@ export const getDb = async () => {
   const request = store.getAll();
   const result = await request;
   console.log("result.value", result);
-  console.error("getDb not implemented");
+  // console.error("getDb not implemented");
   return result;
 };
 
