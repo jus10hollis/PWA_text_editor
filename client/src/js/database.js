@@ -32,7 +32,7 @@ export const getDb = async () => {
   const result = await request;
   console.log("result.value", result);
   // console.error("getDb not implemented");
-  return result;
+  return result.value;
 };
 
 

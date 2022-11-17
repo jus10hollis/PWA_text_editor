@@ -1,14 +1,15 @@
-const { offlineFallback, warmStrategyCache } = require("workbox-recipes");
-const { CacheFirst } = require("workbox-strategies");
-const { registerRoute } = require("workbox-routing");
-const { CacheableResponsePlugin } = require("workbox-cacheable-response");
-const { ExpirationPlugin } = require("workbox-expiration");
-const { precacheAndRoute } = require("workbox-precaching/precacheAndRoute");
+const { warmStrategyCache } = require('workbox-recipes');
+const { CacheFirst, StaleWhileRevalidate } = require('workbox-strategies');
+const { registerRoute } = require('workbox-routing');
+const { CacheableResponsePlugin } = require('workbox-cacheable-response');
+
+const { precacheAndRoute } = require('workbox-precaching/precacheAndRoute');
+const { ExpirationPlugin } = require('workbox-expiration/ExpirationPlugin');
 
 precacheAndRoute(self.__WB_MANIFEST);
 
 const pageCache = new CacheFirst({
-  cacheName: "page-cache",
+  cacheName: 'page-cache',
   plugins: [
     new CacheableResponsePlugin({
       statuses: [0, 200],
@@ -20,37 +21,31 @@ const pageCache = new CacheFirst({
 });
 
 warmStrategyCache({
-  urls: ["/index.html", "/"],
+  urls: ['/index.html', '/'],
   strategy: pageCache,
 });
 
-registerRoute(({ request }) => request.mode === "navigate", pageCache);
+registerRoute(({ request }) => request.mode === 'navigate', pageCache);
 
 // TODO: Implement asset caching
-registerRoute();
-offlineFallback();
+registerRoute(
+  //  filter the requests we want to cache (JS and CSS)
+  ({ request }) => ['style', 'script', 'worker'].includes(request.destination),
+  new StaleWhileRevalidate({
+    // Name of the cache storage.
+    cacheName: 'asset-cache',
+    plugins: [
+      // This plugin will cache responses with these headers to a maximum-age of 30 days
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+    ],
+  })
+);
 
-// For the install to work, a service worker must be successfully registered with scope
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("./src-sw.js").then(
-      function (registration) {
-        // Registration was successful
-        console.log(
-          "ServiceWorker registration successful with scope: ",
-          registration.scope
-        );
-      },
-      function (err) {
-        // registration failed :(
-        console.log("ServiceWorker registration failed: ", err);
-      }
-    );
-  });
-}
-
-this.addEventListener("fetch", function (event) {
-  // This fetch function is required for the SW to be detected and is intentionally empty
-  // For a more robust, real-world SW example see: https://developers.google.com/web/fundamentals/primers/service-workers
-});
+// self.addEventListener('install', (event) => {
+//   console.log('Service worker installed');
+// });
+// self.addEventListener('activate', (event) => {
+//   console.log('Service worker activated');
+// });
